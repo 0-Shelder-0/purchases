@@ -4,6 +4,10 @@ import com.example.purchases.models.UserModel;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "Users")
@@ -21,6 +25,9 @@ public class User implements Serializable {
 
     @Column(name = "Email")
     private String _email;
+
+    @OneToMany(mappedBy="_user", fetch = FetchType.LAZY)
+    private List<Product> _products = new ArrayList<>();
 
     public User() {
     }
@@ -61,5 +68,13 @@ public class User implements Serializable {
 
     public void setEmail(String email) {
         _email = email;
+    }
+
+    public List<Product> getProducts() {
+        return _products;
+    }
+
+    public void setProducts(List<Product> products) {
+        _products = products;
     }
 }

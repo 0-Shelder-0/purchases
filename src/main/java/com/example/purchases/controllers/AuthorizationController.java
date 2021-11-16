@@ -29,6 +29,11 @@ public class AuthorizationController {
         return "login";
     }
 
+    @GetMapping(path = "/signup")
+    public String getSignUpPage() {
+        return "signup";
+    }
+
     @PostMapping(path = "/login")
     public RedirectView login(
             @CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
@@ -44,17 +49,13 @@ public class AuthorizationController {
             UserModel user = new UserModel(login, password);
             try {
                 _authorizationService.login(sessionKey, user);
-                return new RedirectView("/login");
+                return new RedirectView("/index");
             } catch (DBException exception) {
                 model.addAttribute("error", exception.getMessage());
             }
         }
-        return null;
-    }
 
-    @GetMapping(path = "/signup")
-    public String getSignUpPage() {
-        return "signup";
+        return null;
     }
 
     @PostMapping(path = "/signup")
@@ -78,6 +79,7 @@ public class AuthorizationController {
                 model.addAttribute("error", exception.getMessage());
             }
         }
+
         return null;
     }
 

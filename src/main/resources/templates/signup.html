@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Register</title>
   <link
@@ -51,6 +52,7 @@
             <button type="submit" class="btn btn-dark float-end">Sign up</button>
           </div>
         </form>
+        <span th:text="${error}" style="color: red"></span>
         <hr class="mt-4">
         <div class="col-12">
           <p class="text-center mb-0">
