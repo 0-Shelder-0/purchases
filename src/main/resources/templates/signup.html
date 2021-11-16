@@ -1,7 +1,6 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
-  <title>Login</title>
+  <title>Register</title>
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
@@ -16,8 +15,8 @@
   <div class="row">
     <div class="col-md-4 offset-md-4">
       <div class="login-form bg-light mt-4 p-4">
-        <form action="login" method="post" class="row g-3">
-          <h4>Log in</h4>
+        <form action="signup" method="post" class="row g-3">
+          <h4>Sign up</h4>
           <div class="col-12">
             <label for="login">Login</label>
             <input
@@ -26,6 +25,16 @@
               name="login"
               class="form-control"
               placeholder="Please enter your login"
+            >
+          </div>
+          <div class="col-12">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              class="form-control"
+              placeholder="Please enter your email"
             >
           </div>
           <div class="col-12">
@@ -39,15 +48,14 @@
             >
           </div>
           <div class="col-12">
-            <button type="submit" class="btn btn-dark float-end">Login</button>
+            <button type="submit" class="btn btn-dark float-end">Sign up</button>
           </div>
         </form>
-        <span th:text="${error}" style="color: red"></span>
         <hr class="mt-4">
         <div class="col-12">
           <p class="text-center mb-0">
-            Have not account yet?
-            <a class="authorization-reference" onclick="moveToSignup()">Sign up</a>
+            Already registered?
+            <a class="authorization-reference" onclick="moveToLogin()">Log in</a>
           </p>
         </div>
       </div>

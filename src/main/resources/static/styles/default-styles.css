@@ -1,0 +1,32 @@
+.col-width {
+    width: 15%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.file-name {
+    margin-left: 10px;
+    cursor: pointer
+}
+
+.small-icon {
+    width: 1%;
+    height: 1%;
+}
+
+.file-icon {
+    width: 2%;
+    height: 2%;
+}
+
+.directory-icon {
+    width: 3%;
+    height: 3%;
+}
+
+.authorization-reference {
+    color: dodgerblue;
+    cursor: pointer;
+}

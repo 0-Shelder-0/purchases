@@ -18,10 +18,10 @@ public class AuthorizationService {
         _dbService = dbService;
     }
 
-    public void register(UserModel user) throws Exception {
+    public void register(UserModel user) throws DBException {
         UserModel existedUser = _dbService.getUserByLogin(user.getLogin());
         if (existedUser != null) {
-            throw new Exception("This login already exists");
+            throw new DBException("This login already exists");
         }
 
         _dbService.addUser(user);

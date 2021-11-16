@@ -15,7 +15,7 @@ public class MainController {
         _authorizationService = authorizationService;
     }
 
-    @GetMapping(path = "/")
+    @GetMapping(path = "/main")
     public RedirectView main(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey) {
         if (_authorizationService.isLogin(sessionKey)) {
             return new RedirectView("/index");
