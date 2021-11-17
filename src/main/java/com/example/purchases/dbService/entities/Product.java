@@ -17,8 +17,8 @@ public class Product implements Serializable {
     @Column(name = "Description")
     private String _description;
 
-    @Column(name = "IsActive", nullable = false)
-    private boolean _isActive;
+    @Column(name = "IsCompleted", nullable = false)
+    private boolean _isCompleted;
 
     @ManyToOne
     @JoinColumn(name = "UserId", referencedColumnName = "Id")
@@ -30,13 +30,13 @@ public class Product implements Serializable {
     public Product(String description, User user) {
         _description = description;
         _user = user;
-        _isActive = true;
+        _isCompleted = false;
     }
 
     public Product(ProductModel productModel, User user) {
         _description = productModel.getDescription();
         _user = user;
-        _isActive = true;
+        _isCompleted = false;
     }
 
     public int getId() {
@@ -55,12 +55,12 @@ public class Product implements Serializable {
         _description = description;
     }
 
-    public boolean isActive() {
-        return _isActive;
+    public boolean isCompleted() {
+        return _isCompleted;
     }
 
-    public void setActive(boolean active) {
-        _isActive = active;
+    public void setCompleted(boolean completed) {
+        _isCompleted = completed;
     }
 
     public User getUser() {

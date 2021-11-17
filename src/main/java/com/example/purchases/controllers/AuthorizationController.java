@@ -1,6 +1,6 @@
 package com.example.purchases.controllers;
 
-import com.example.purchases.exceptions.DBException;
+import com.example.purchases.exceptions.ValidationException;
 import com.example.purchases.models.UserModel;
 import com.example.purchases.services.AuthorizationService;
 import org.springframework.stereotype.Controller;
@@ -13,6 +13,8 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static com.example.purchases.extensions.StringExtensions.isNullOrEmpty;
 
 @Controller
 public class AuthorizationController {
@@ -45,7 +47,7 @@ public class AuthorizationController {
 
         String login = formData.get("login");
         String password = formData.get("password");
-        if (login.isBlank() || password.isBlank()) {
+        if (isNullOrEmpty(login) || isNullOrEmpty(password)) {
             errors.add("Login and/or password can't be empty");
         }
 
@@ -54,7 +56,7 @@ public class AuthorizationController {
             try {
                 _authorizationService.login(sessionKey, user);
                 return new RedirectView("/products");
-            } catch (DBException exception) {
+            } catch (ValidationException exception) {
                 errors.add(exception.getMessage());
             }
         }
@@ -76,7 +78,7 @@ public class AuthorizationController {
         String login = formData.get("login");
         String password = formData.get("password");
         String email = formData.get("email");
-        if (login.isBlank() || password.isBlank() || email.isBlank()) {
+        if (isNullOrEmpty(login) || isNullOrEmpty(password) || isNullOrEmpty(email)) {
             errors.add("Login, email and password can't be empty");
         }
 
@@ -86,7 +88,7 @@ public class AuthorizationController {
                 _authorizationService.register(user);
                 _authorizationService.login(sessionKey, user);
                 return new RedirectView("/products");
-            } catch (DBException exception) {
+            } catch (ValidationException exception) {
                 errors.add(exception.getMessage());
             }
         }

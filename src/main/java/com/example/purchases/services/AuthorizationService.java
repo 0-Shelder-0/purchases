@@ -2,7 +2,7 @@ package com.example.purchases.services;
 
 import com.example.purchases.dbService.DBService;
 import com.example.purchases.dbService.entities.User;
-import com.example.purchases.exceptions.DBException;
+import com.example.purchases.exceptions.ValidationException;
 import com.example.purchases.models.UserModel;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +18,10 @@ public class AuthorizationService {
         _dbService = dbService;
     }
 
-    public void register(UserModel user) throws DBException {
+    public void register(UserModel user) throws ValidationException {
         User existedUser = _dbService.getUserByLogin(user.getLogin());
         if (existedUser != null) {
-            throw new DBException("This login already exists");
+            throw new ValidationException("This login already exists");
         }
 
         _dbService.addUser(user);
@@ -31,11 +31,11 @@ public class AuthorizationService {
         return _userLoginBySessionKeyMap.containsKey(sessionKey);
     }
 
-    public void login(String sessionKey, UserModel userModel) throws DBException {
+    public void login(String sessionKey, UserModel userModel) throws ValidationException {
         User user = _dbService.getUserByLogin(userModel.getLogin());
 
         if (user == null || !userModel.equalsLoginAndPassword(user)) {
-            throw new DBException("User not exists");
+            throw new ValidationException("User not exists");
         }
 
         if (!_userLoginBySessionKeyMap.containsKey(sessionKey)) {

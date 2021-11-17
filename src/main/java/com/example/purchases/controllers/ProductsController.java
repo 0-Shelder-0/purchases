@@ -3,19 +3,18 @@ package com.example.purchases.controllers;
 import com.example.purchases.dbService.DBService;
 import com.example.purchases.dbService.entities.Product;
 import com.example.purchases.dbService.entities.User;
-import com.example.purchases.exceptions.DBException;
+import com.example.purchases.exceptions.ValidationException;
 import com.example.purchases.models.ProductModel;
 import com.example.purchases.services.AuthorizationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static com.example.purchases.extensions.StringExtensions.isNullOrEmpty;
 
 
 @Controller
@@ -42,7 +41,7 @@ public class ProductsController {
             int userId = _authorizationService.getUserId(sessionKey);
             ProductModel[] products = _dbService.getProductsByUser(userId);
             model.addAttribute("products", products);
-        } catch (DBException exception) {
+        } catch (ValidationException exception) {
             model.addAttribute("error", exception.getMessage());
         }
 
@@ -50,11 +49,11 @@ public class ProductsController {
     }
 
     @PostMapping(path = "/addProduct")
-    public void addProduct(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
-                           @RequestParam HashMap<String, String> formData,
-                           Model model) {
+    public ModelAndView addProduct(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
+                                   @RequestBody HashMap<String, String> data,
+                                   Model model) {
 
-        String description = formData.get("description");
+        String description = data.get("description");
         ArrayList<String> errors = validateRequest(sessionKey, description);
 
         if (errors.isEmpty()) {
@@ -64,7 +63,7 @@ public class ProductsController {
 
                 Product product = new Product(description, user);
                 _dbService.addProduct(product);
-            } catch (DBException exception) {
+            } catch (ValidationException exception) {
                 errors.add(exception.getMessage());
             }
         }
@@ -72,39 +71,82 @@ public class ProductsController {
         if (errors.size() > 0) {
             model.addAttribute("errors", errors);
         }
+
+        return new ModelAndView("products");
     }
 
     @PostMapping(path = "/updateProduct")
-    public void updateProduct(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
-                              @RequestParam HashMap<String, String> formData,
-                              Model model) {
+    public ModelAndView updateProduct(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
+                                      @RequestBody HashMap<String, String> data,
+                                      Model model) {
 
-        String description = formData.get("description");
+        String description = data.get("description");
         ArrayList<String> errors = validateRequest(sessionKey, description);
 
+        if (errors.isEmpty()) {
+            try {
+                ProductModel productModel = getProductModel(data, description);
+                int userId = _authorizationService.getUserId(sessionKey);
+                _dbService.updateProduct(userId, productModel);
+            } catch (ValidationException exception) {
+                errors.add(exception.getMessage());
+            }
+        }
+
+        if (errors.size() > 0) {
+            model.addAttribute("errors", errors);
+        }
+
+        return new ModelAndView("products");
+    }
+
+    @PostMapping(path = "/deleteProduct")
+    public ModelAndView deleteProduct(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
+                                      @RequestBody HashMap<String, String> data,
+                                      Model model) {
+
+        ArrayList<String> errors = new ArrayList<>();
+        if (!_authorizationService.isLogin(sessionKey)) {
+            errors.add("You are not authorized");
+        }
+
+        if (errors.isEmpty()) {
+            try {
+                int productId = getProductIdOrThrowIfNotValid(data);
+                int userId = _authorizationService.getUserId(sessionKey);
+                _dbService.deleteProduct(userId, productId);
+            } catch (ValidationException exception) {
+                errors.add(exception.getMessage());
+            }
+        }
+
+        if (errors.size() > 0) {
+            model.addAttribute("errors", errors);
+        }
+
+        return new ModelAndView("products");
+    }
+
+
+    private ProductModel getProductModel(HashMap<String, String> data, String description) throws ValidationException {
+        int productId = getProductIdOrThrowIfNotValid(data);
+        boolean isCompleted = Boolean.parseBoolean(data.get("isCompleted"));
+
+        return new ProductModel(productId, description, isCompleted);
+    }
+
+    private int getProductIdOrThrowIfNotValid(HashMap<String, String> data) throws ValidationException {
         int productId;
         try {
-            productId = Integer.parseInt(formData.get("productId"));
+            productId = Integer.parseInt(data.get("productId"));
         } catch (NumberFormatException exception) {
             productId = 0;
         }
 
         if (productId <= 0) {
-            errors.add("Field 'productId' must be set");
+            throw new ValidationException("Field 'productId' must be set");
         }
-
-        if (errors.isEmpty()) {
-            try {
-                int userId = _authorizationService.getUserId(sessionKey);
-                _dbService.updateProduct(userId, productId, description);
-            } catch (DBException exception) {
-                errors.add(exception.getMessage());
-            }
-        }
-
-        if (errors.size() > 0) {
-            model.addAttribute("errors", errors);
-        }
+        return productId;
     }
 
     private ArrayList<String> validateRequest(String sessionKey, String description) {
@@ -114,7 +156,7 @@ public class ProductsController {
             errors.add("You are not authorized");
         }
 
-        if (description.isBlank()) {
+        if (isNullOrEmpty(description)) {
             errors.add("Description can't be empty");
         }
 

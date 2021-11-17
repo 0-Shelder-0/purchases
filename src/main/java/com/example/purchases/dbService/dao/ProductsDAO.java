@@ -18,13 +18,13 @@ public class ProductsDAO {
 
     public Product[] getProductsByUser(int userId) throws HibernateException {
         Criteria criteria = _session.createCriteria(Product.class);
-        List<Product> products = criteria.add(Restrictions.eq("_userId", userId)).list();
+        List<Product> products = criteria.add(Restrictions.eq("_user.id", userId)).list();
         return products.toArray(Product[]::new);
     }
 
     public Product getProduct(int productId, int userId) throws HibernateException {
         return (Product) _session.createCriteria(Product.class)
-                                 .add(Restrictions.eq("_userId", userId))
+                                 .add(Restrictions.eq("_user.id", userId))
                                  .add(Restrictions.eq("_id", productId))
                                  .uniqueResult();
     }
@@ -35,5 +35,12 @@ public class ProductsDAO {
 
     public void updateProduct(Product product) throws HibernateException {
         _session.update(product);
+    }
+
+    public void deleteProduct(int productId, int userId) throws HibernateException {
+        Product product = getProduct(productId, userId);
+        if (product != null) {
+            _session.delete(product);
+        }
     }
 }

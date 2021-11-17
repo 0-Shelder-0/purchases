@@ -30,3 +30,32 @@
     color: dodgerblue;
     cursor: pointer;
 }
+
+.product-header {
+    margin-bottom: 25px;
+}
+
+.form-check-input-bg {
+    width: 2em;
+    height: 2em;
+    border-radius: 0.25rem;
+}
+
+.delete-button {
+    display: flex;
+    align-items: center;
+}
+
+.strike-out-text {
+    text-decoration: line-through;
+}
+
+.normal-text {
+    text-decoration: none;
+}
+
+.logout-button {
+    width: 5rem;
+    height: 3rem;
+    margin-top: 10px;
+}

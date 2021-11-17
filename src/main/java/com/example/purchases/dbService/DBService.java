@@ -4,7 +4,7 @@ import com.example.purchases.dbService.dao.ProductsDAO;
 import com.example.purchases.dbService.dao.UsersDAO;
 import com.example.purchases.dbService.entities.Product;
 import com.example.purchases.dbService.entities.User;
-import com.example.purchases.exceptions.DBException;
+import com.example.purchases.exceptions.ValidationException;
 import com.example.purchases.models.ProductModel;
 import com.example.purchases.models.UserModel;
 import org.hibernate.HibernateException;
@@ -43,7 +43,7 @@ public class DBService {
         return configuration;
     }
 
-    public User getUserByLogin(String login) throws DBException {
+    public User getUserByLogin(String login) throws ValidationException {
         try {
             Session session = sessionFactory.openSession();
 
@@ -53,11 +53,11 @@ public class DBService {
             session.close();
             return user;
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
         }
     }
 
-    public UserModel getUserModelByLogin(String login) throws DBException {
+    public UserModel getUserModelByLogin(String login) throws ValidationException {
         UserModel userModel = null;
         User user = getUserByLogin(login);
         if (user != null) {
@@ -66,7 +66,7 @@ public class DBService {
         return userModel;
     }
 
-    public User getUser(int userId) throws DBException {
+    public User getUser(int userId) throws ValidationException {
         try {
             Session session = sessionFactory.openSession();
 
@@ -76,11 +76,11 @@ public class DBService {
             session.close();
             return user;
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
         }
     }
 
-    public void addUser(UserModel userModel) throws DBException {
+    public void addUser(UserModel userModel) throws ValidationException {
         try {
             Session session = sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
@@ -92,11 +92,11 @@ public class DBService {
             transaction.commit();
             session.close();
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
         }
     }
 
-    public ProductModel[] getProductsByUser(int userId) throws DBException {
+    public ProductModel[] getProductsByUser(int userId) throws ValidationException {
         try {
             ProductModel[] productModels = null;
             Session session = sessionFactory.openSession();
@@ -112,11 +112,11 @@ public class DBService {
             session.close();
             return productModels;
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
         }
     }
 
-    public void addProduct(Product product) throws DBException {
+    public void addProduct(Product product) throws ValidationException {
         try {
             Session session = sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
@@ -127,28 +127,45 @@ public class DBService {
             transaction.commit();
             session.close();
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
         }
     }
 
-    public void updateProduct(int userId, int productId, String description) throws DBException {
+    public void updateProduct(int userId, ProductModel productModel) throws ValidationException {
         try {
             Session session = sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             ProductsDAO dao = new ProductsDAO(session);
-            Product product = dao.getProduct(productId, userId);
+            Product product = dao.getProduct(productModel.getProductId(), userId);
             if (product == null) {
-                throw new DBException("Product not found");
+                throw new ValidationException("Product not found");
             }
 
-            product.setDescription(description);
+            product.setDescription(productModel.getDescription());
+            product.setCompleted(productModel.isCompleted());
+
             dao.updateProduct(product);
 
             transaction.commit();
             session.close();
         } catch (HibernateException e) {
-            throw new DBException(e);
+            throw new ValidationException(e);
+        }
+    }
+
+    public void deleteProduct(int userId, int productId) throws ValidationException {
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
+
+            ProductsDAO dao = new ProductsDAO(session);
+            dao.deleteProduct(productId, userId);
+
+            transaction.commit();
+            session.close();
+        } catch (HibernateException e) {
+            throw new ValidationException(e);
         }
     }
 
