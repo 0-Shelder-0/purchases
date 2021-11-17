@@ -42,7 +42,9 @@
             <button type="submit" class="btn btn-dark float-end">Login</button>
           </div>
         </form>
-        <span th:text="${error}" style="color: red"></span>
+        <div th:each="error : ${errors}">
+          <span th:text="${error}" style="color: red"></span>
+        </div>
         <hr class="mt-4">
         <div class="col-12">
           <p class="text-center mb-0">

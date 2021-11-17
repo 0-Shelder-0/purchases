@@ -22,7 +22,18 @@ public class ProductsDAO {
         return products.toArray(Product[]::new);
     }
 
+    public Product getProduct(int productId, int userId) throws HibernateException {
+        return (Product) _session.createCriteria(Product.class)
+                                 .add(Restrictions.eq("_userId", userId))
+                                 .add(Restrictions.eq("_id", productId))
+                                 .uniqueResult();
+    }
+
     public void insertProduct(Product product) throws HibernateException {
         _session.save(product);
+    }
+
+    public void updateProduct(Product product) throws HibernateException {
+        _session.update(product);
     }
 }

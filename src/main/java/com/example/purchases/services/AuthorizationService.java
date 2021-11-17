@@ -1,9 +1,9 @@
 package com.example.purchases.services;
 
 import com.example.purchases.dbService.DBService;
+import com.example.purchases.dbService.entities.User;
 import com.example.purchases.exceptions.DBException;
 import com.example.purchases.models.UserModel;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -12,14 +12,14 @@ import java.util.Map;
 @Service
 public class AuthorizationService {
     private final DBService _dbService;
-    private final Map<String, UserModel> _userBySessionKeyMap = new HashMap<>();
+    private final Map<String, Integer> _userLoginBySessionKeyMap = new HashMap<>();
 
     public AuthorizationService(DBService dbService) {
         _dbService = dbService;
     }
 
     public void register(UserModel user) throws DBException {
-        UserModel existedUser = _dbService.getUserByLogin(user.getLogin());
+        User existedUser = _dbService.getUserByLogin(user.getLogin());
         if (existedUser != null) {
             throw new DBException("This login already exists");
         }
@@ -28,29 +28,26 @@ public class AuthorizationService {
     }
 
     public boolean isLogin(String sessionKey) {
-        return _userBySessionKeyMap.containsKey(sessionKey);
+        return _userLoginBySessionKeyMap.containsKey(sessionKey);
     }
 
-    public void login(String sessionKey, UserModel user) throws DBException {
-        if (!containsUser(user)) {
+    public void login(String sessionKey, UserModel userModel) throws DBException {
+        User user = _dbService.getUserByLogin(userModel.getLogin());
+
+        if (user == null || !userModel.equalsLoginAndPassword(user)) {
             throw new DBException("User not exists");
         }
 
-        if (!_userBySessionKeyMap.containsKey(sessionKey)) {
-            _userBySessionKeyMap.put(sessionKey, user);
+        if (!_userLoginBySessionKeyMap.containsKey(sessionKey)) {
+            _userLoginBySessionKeyMap.put(sessionKey, user.getId());
         }
     }
 
-    public String getLogin(String sessionKey) {
-        return _userBySessionKeyMap.get(sessionKey).getLogin();
+    public int getUserId(String sessionKey) {
+        return _userLoginBySessionKeyMap.get(sessionKey);
     }
 
     public void logout(String sessionKey) {
-        _userBySessionKeyMap.remove(sessionKey);
-    }
-
-    private boolean containsUser(UserModel user) throws DBException {
-        UserModel existedUser = _dbService.getUserByLogin(user.getLogin());
-        return existedUser != null && existedUser.equals(user);
+        _userLoginBySessionKeyMap.remove(sessionKey);
     }
 }

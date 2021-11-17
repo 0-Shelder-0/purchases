@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import static com.example.purchases.extensions.StringExtensions.isNullOrWhiteSpace;
 
 @Controller
 public class AuthorizationController {
@@ -35,25 +34,31 @@ public class AuthorizationController {
     }
 
     @PostMapping(path = "/login")
-    public RedirectView login(
-            @CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
-            @RequestParam HashMap<String, String> formData,
-            Model model) {
+    public RedirectView login(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey,
+                              @RequestParam HashMap<String, String> formData,
+                              Model model) {
+
+        ArrayList<String> errors = new ArrayList<>();
+        if (_authorizationService.isLogin(sessionKey)) {
+            errors.add("You are already logged in");
+        }
 
         String login = formData.get("login");
         String password = formData.get("password");
+        if (login.isBlank() || password.isBlank()) {
+            errors.add("Login and/or password can't be empty");
+        }
 
-        if (isNullOrWhiteSpace(login) || isNullOrWhiteSpace(password)) {
-            model.addAttribute("error", "Login and/or password can't be empty");
-        } else {
+        if (errors.isEmpty()) {
             UserModel user = new UserModel(login, password);
             try {
                 _authorizationService.login(sessionKey, user);
-                return new RedirectView("/index");
+                return new RedirectView("/products");
             } catch (DBException exception) {
-                model.addAttribute("error", exception.getMessage());
+                errors.add(exception.getMessage());
             }
         }
+        model.addAttribute("errors", errors);
 
         return null;
     }
@@ -63,22 +68,29 @@ public class AuthorizationController {
                                @RequestParam HashMap<String, String> formData,
                                Model model) {
 
+        ArrayList<String> errors = new ArrayList<>();
+        if (_authorizationService.isLogin(sessionKey)) {
+            errors.add("You are already logged in");
+        }
+
         String login = formData.get("login");
         String password = formData.get("password");
         String email = formData.get("email");
+        if (login.isBlank() || password.isBlank() || email.isBlank()) {
+            errors.add("Login, email and password can't be empty");
+        }
 
-        if (isNullOrWhiteSpace(login) || isNullOrWhiteSpace(password) || isNullOrWhiteSpace(email)) {
-            model.addAttribute("error", "Login, email and password can't be empty");
-        } else {
+        if (errors.isEmpty()) {
             UserModel user = new UserModel(login, password, email);
             try {
                 _authorizationService.register(user);
                 _authorizationService.login(sessionKey, user);
-                return new RedirectView("/index");
+                return new RedirectView("/products");
             } catch (DBException exception) {
-                model.addAttribute("error", exception.getMessage());
+                errors.add(exception.getMessage());
             }
         }
+        model.addAttribute("errors", errors);
 
         return null;
     }

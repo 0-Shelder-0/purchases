@@ -43,22 +43,27 @@ public class DBService {
         return configuration;
     }
 
-    public UserModel getUserByLogin(String login) throws DBException {
+    public User getUserByLogin(String login) throws DBException {
         try {
-            UserModel userModel = null;
             Session session = sessionFactory.openSession();
 
             UsersDAO dao = new UsersDAO(session);
             User user = dao.getUserByLogin(login);
-            if (user != null) {
-                userModel = new UserModel(user);
-            }
 
             session.close();
-            return userModel;
+            return user;
         } catch (HibernateException e) {
             throw new DBException(e);
         }
+    }
+
+    public UserModel getUserModelByLogin(String login) throws DBException {
+        UserModel userModel = null;
+        User user = getUserByLogin(login);
+        if (user != null) {
+            userModel = new UserModel(user);
+        }
+        return userModel;
     }
 
     public User getUser(int userId) throws DBException {
@@ -100,8 +105,8 @@ public class DBService {
             Product[] products = dao.getProductsByUser(userId);
             if (products != null) {
                 productModels = Arrays.stream(products)
-                                     .map(ProductModel::new)
-                                     .toArray(ProductModel[]::new);
+                                      .map(ProductModel::new)
+                                      .toArray(ProductModel[]::new);
             }
 
             session.close();
@@ -111,15 +116,34 @@ public class DBService {
         }
     }
 
-    public void addProduct(ProductModel productModel) throws DBException {
+    public void addProduct(Product product) throws DBException {
         try {
             Session session = sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             ProductsDAO dao = new ProductsDAO(session);
-            User user = getUser(productModel.getUserId());
-            Product product = new Product(productModel, user);
             dao.insertProduct(product);
+
+            transaction.commit();
+            session.close();
+        } catch (HibernateException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public void updateProduct(int userId, int productId, String description) throws DBException {
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
+
+            ProductsDAO dao = new ProductsDAO(session);
+            Product product = dao.getProduct(productId, userId);
+            if (product == null) {
+                throw new DBException("Product not found");
+            }
+
+            product.setDescription(description);
+            dao.updateProduct(product);
 
             transaction.commit();
             session.close();

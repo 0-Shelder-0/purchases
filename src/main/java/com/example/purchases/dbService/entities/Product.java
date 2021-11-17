@@ -17,6 +17,9 @@ public class Product implements Serializable {
     @Column(name = "Description")
     private String _description;
 
+    @Column(name = "IsActive", nullable = false)
+    private boolean _isActive;
+
     @ManyToOne
     @JoinColumn(name = "UserId", referencedColumnName = "Id")
     private User _user;
@@ -24,9 +27,16 @@ public class Product implements Serializable {
     public Product() {
     }
 
+    public Product(String description, User user) {
+        _description = description;
+        _user = user;
+        _isActive = true;
+    }
+
     public Product(ProductModel productModel, User user) {
         _description = productModel.getDescription();
         _user = user;
+        _isActive = true;
     }
 
     public int getId() {
@@ -43,6 +53,14 @@ public class Product implements Serializable {
 
     public void setDescription(String description) {
         _description = description;
+    }
+
+    public boolean isActive() {
+        return _isActive;
+    }
+
+    public void setActive(boolean active) {
+        _isActive = active;
     }
 
     public User getUser() {

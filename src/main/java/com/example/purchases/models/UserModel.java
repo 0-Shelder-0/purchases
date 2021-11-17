@@ -39,22 +39,7 @@ public class UserModel {
         return _email;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-
-        if (!(obj instanceof UserModel)) {
-            return false;
-        }
-
-        UserModel user = (UserModel) obj;
+    public boolean equalsLoginAndPassword(User user) {
         return Objects.equals(user.getLogin(), _login) && Objects.equals(user.getPassword(), _password);
-    }
-
-    @Override
-    public int hashCode() {
-        return 73 * getLogin().hashCode() + 29 * getPassword().hashCode();
     }
 }

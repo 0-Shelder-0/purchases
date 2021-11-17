@@ -1,6 +1,5 @@
 package com.example.purchases.controllers;
 
-import com.example.purchases.exceptions.DBException;
 import com.example.purchases.services.AuthorizationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -17,16 +16,11 @@ public class MainController {
     }
 
     @GetMapping(path = "/")
-    public RedirectView main(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey) throws DBException {
+    public RedirectView main(@CookieValue(value = "JSESSIONID", defaultValue = "") String sessionKey) {
         if (_authorizationService.isLogin(sessionKey)) {
-            return new RedirectView("/index");
+            return new RedirectView("/products");
         } else {
             return new RedirectView("/login");
         }
-    }
-
-    @GetMapping(path = "/index")
-    public String index() {
-        return "index";
     }
 }
