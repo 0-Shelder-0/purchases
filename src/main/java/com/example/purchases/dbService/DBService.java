@@ -14,6 +14,7 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -21,31 +22,32 @@ import java.util.Arrays;
 @Service
 public class DBService {
 
-    private final SessionFactory sessionFactory;
+    private final SessionFactory _sessionFactory;
+    private final Environment _environment;
 
-    public DBService() {
+    public DBService(Environment environment) {
+        _environment = environment;
         Configuration configuration = getMySqlConfiguration();
-        sessionFactory = createSessionFactory(configuration);
+        _sessionFactory = createSessionFactory(configuration);
     }
 
     private Configuration getMySqlConfiguration() {
         Configuration configuration = new Configuration();
         configuration.addAnnotatedClass(User.class);
-        String connectionString = "jdbc:mysql://localhost:3306/purchases";
 
-        configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-        configuration.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        configuration.setProperty("hibernate.connection.url", connectionString);
-        configuration.setProperty("hibernate.connection.username", "root");
-        configuration.setProperty("hibernate.connection.password", "root");
-        configuration.setProperty("hibernate.hbm2ddl.auto", "update");
+        configuration.setProperty("hibernate.connection.url", _environment.getProperty("spring.datasource.url"));
+        configuration.setProperty("hibernate.dialect", _environment.getProperty("spring.jpa.database-platform"));
+        configuration.setProperty("hibernate.connection.driver_class", _environment.getProperty("spring.datasource.driver-class-name"));
+        configuration.setProperty("hibernate.connection.username", _environment.getProperty("spring.datasource.username"));
+        configuration.setProperty("hibernate.connection.password", _environment.getProperty("spring.datasource.password"));
+        configuration.setProperty("hibernate.hbm2ddl.auto", _environment.getProperty("spring.jpa.hibernate.ddl-auto"));
 
         return configuration;
     }
 
     public User getUserByLogin(String login) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
 
             UsersDAO dao = new UsersDAO(session);
             User user = dao.getUserByLogin(login);
@@ -68,7 +70,7 @@ public class DBService {
 
     public User getUser(int userId) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
 
             UsersDAO dao = new UsersDAO(session);
             User user = dao.getUser(userId);
@@ -82,7 +84,7 @@ public class DBService {
 
     public void addUser(UserModel userModel) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             UsersDAO dao = new UsersDAO(session);
@@ -99,7 +101,7 @@ public class DBService {
     public ProductModel[] getProductsByUser(int userId) throws ValidationException {
         try {
             ProductModel[] productModels = null;
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
 
             ProductsDAO dao = new ProductsDAO(session);
             Product[] products = dao.getProductsByUser(userId);
@@ -118,7 +120,7 @@ public class DBService {
 
     public void addProduct(Product product) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             ProductsDAO dao = new ProductsDAO(session);
@@ -133,7 +135,7 @@ public class DBService {
 
     public void updateProduct(int userId, ProductModel productModel) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             ProductsDAO dao = new ProductsDAO(session);
@@ -156,7 +158,7 @@ public class DBService {
 
     public void deleteProduct(int userId, int productId) throws ValidationException {
         try {
-            Session session = sessionFactory.openSession();
+            Session session = _sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
 
             ProductsDAO dao = new ProductsDAO(session);
